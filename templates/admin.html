@@ -20,6 +20,7 @@
     --text:    #e2e8f0;
     --muted:   #475569;
     --white:   #ffffff;
+    --purple:  #a78bfa;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -181,6 +182,18 @@
 
   /* Device info */
   .device-name { color: var(--white); font-weight: 600; font-size: 13px; }
+  .device-alias {
+    display: inline-block;
+    background: #1a0f2e;
+    color: var(--purple);
+    border: 1px solid #3b1f6e;
+    font-size: 10px;
+    padding: 1px 7px;
+    margin-left: 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+  }
   .device-id   { color: var(--muted); font-size: 10px; margin-top: 2px; font-family: monospace; }
   .device-ip   { color: var(--muted); font-size: 10px; }
 
@@ -189,6 +202,16 @@
     font-size: 9px; letter-spacing: 1px;
     background: #0f1f14; color: var(--green); border: 1px solid #1a3326;
   }
+
+  /* Edit alias button */
+  .btn-alias {
+    padding: 3px 8px; font-size: 10px; font-family: inherit;
+    background: transparent; border: 1px solid #3b1f6e;
+    color: var(--purple); cursor: pointer;
+    transition: all .2s; margin-left: 4px;
+    vertical-align: middle;
+  }
+  .btn-alias:hover { background: #1a0f2e; border-color: var(--purple); }
 
   /* Action buttons */
   .btn-block {
@@ -255,6 +278,25 @@
   .modal-btns button { flex: 1; padding: 11px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border: none; letter-spacing: 1px; }
   .btn-confirm-block { background: var(--red); color: #fff; }
   .btn-cancel { background: var(--card2); color: var(--muted); border: 1px solid var(--border) !important; }
+
+  /* Alias modal — purple theme */
+  #alias-modal .modal {
+    border-top-color: var(--purple);
+  }
+  #alias-modal .modal input:focus { border-color: var(--purple); }
+  .btn-confirm-alias { background: var(--purple) !important; color: #000 !important; }
+  .btn-clear-alias {
+    flex: 0 0 auto !important;
+    padding: 11px 14px !important;
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    color: var(--muted) !important;
+    font-size: 10px !important;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+  }
+  .btn-clear-alias:hover { border-color: var(--orange) !important; color: var(--orange) !important; }
 
   @media (max-width: 900px) {
     .stats-bar { grid-template-columns: repeat(2,1fr); }
@@ -365,6 +407,31 @@
   </div>
 </div>
 
+<!-- ══ ALIAS MODAL (নতুন) ══════════════════════════════ -->
+<div class="modal-overlay" id="alias-modal">
+  <div class="modal" style="border-top-color:var(--purple)">
+    <h3>✏️ Device Label দিন</h3>
+    <p id="alias-modal-info" style="color:var(--muted);font-size:11px;margin-bottom:20px">Device: —</p>
+    <input
+      type="text"
+      id="alias-input"
+      placeholder="যেমন: Alif, Rahim, Office PC…"
+      maxlength="40"
+      style="border-color:var(--border)"
+      onfocus="this.style.borderColor='var(--purple)'"
+      onblur="this.style.borderColor='var(--border)'"
+    />
+    <div style="font-size:10px;color:var(--muted);margin-top:-10px;margin-bottom:16px">
+      💡 এই label শুধু আপনার browser এ save হবে। কারো PC তে দেখাবে না।
+    </div>
+    <div class="modal-btns">
+      <button class="btn-clear-alias" onclick="clearAlias()">🗑 Label মুছুন</button>
+      <button class="btn-cancel" onclick="closeAliasModal()">বাতিল</button>
+      <button class="btn-confirm-alias" onclick="confirmAlias()">✓ Save করুন</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -372,8 +439,29 @@
   let adminPw = '';
   let allDevices = [];
   let pendingBlockId = '';
+  let pendingAliasId = '';
   let autoTimer = null;
   let countdown = 15;
+
+  // ── ALIAS STORAGE (localStorage) ─────────────────────
+  const ALIAS_KEY = 'luckyloop_aliases';
+
+  function loadAliases() {
+    try {
+      return JSON.parse(localStorage.getItem(ALIAS_KEY) || '{}');
+    } catch { return {}; }
+  }
+
+  function saveAlias(deviceId, alias) {
+    const aliases = loadAliases();
+    if (alias) aliases[deviceId] = alias;
+    else delete aliases[deviceId];
+    localStorage.setItem(ALIAS_KEY, JSON.stringify(aliases));
+  }
+
+  function getAlias(deviceId) {
+    return loadAliases()[deviceId] || '';
+  }
 
   // ── LOGIN ─────────────────────────────────────────────
   document.getElementById('pw-input').addEventListener('keydown', e => {
@@ -455,18 +543,21 @@
   }
 
   // ── RENDER TABLE ──────────────────────────────────────
-  let currentList = []; // global — onclick index দিয়ে access করবে
+  let currentList = [];
 
   function renderTable() {
     const q      = document.getElementById('search-box').value.toLowerCase();
     const filter = document.getElementById('filter-status').value;
     const now    = Date.now();
+    const aliases = loadAliases();
 
     currentList = allDevices.filter(d => {
+      const alias = aliases[d.device_id] || '';
       const matchQ = !q ||
         (d.device_name || '').toLowerCase().includes(q) ||
         (d.device_id   || '').toLowerCase().includes(q) ||
-        (d.license_key || '').toLowerCase().includes(q);
+        (d.license_key || '').toLowerCase().includes(q) ||
+        alias.toLowerCase().includes(q); // alias দিয়েও search হবে
       if (!matchQ) return false;
       if (filter === 'blocked') return d.is_blocked;
       if (filter === 'active')  return !d.is_blocked;
@@ -488,12 +579,15 @@
         ? (now - new Date(d.last_seen).getTime()) / 1000 < 300
         : false;
 
+      const alias = aliases[d.device_id] || '';
+      const aliasBadge = alias
+        ? `<span class="device-alias">👤 ${escHtml(alias)}</span>`
+        : '';
+
       const statusBadge = d.is_blocked
         ? '<span class="badge blocked"><span class="badge-dot"></span>BLOCKED</span>'
         : '<span class="badge active"><span class="badge-dot"></span>ACTIVE</span>';
 
-      // ✅ FIX: index দিয়ে currentList থেকে device নেওয়া হচ্ছে
-      // onclick এ শুধু number — কোনো string/quote সমস্যা নেই
       const actionBtn = d.is_blocked
         ? '<button class="btn-unblock" onclick="unblockByIndex(' + i + ')">✓ Unblock</button>'
         : '<button class="btn-block" onclick="openBlockByIndex(' + i + ')">✕ Block</button>';
@@ -504,10 +598,14 @@
 
       return '<tr>'
         + '<td style="color:var(--muted);font-size:11px">' + (i+1) + '</td>'
-        + '<td><div style="display:flex;align-items:center;gap:8px">'
-        + '<span class="online-dot ' + (isOnline?'yes':'no') + '"></span>'
+        + '<td><div style="display:flex;align-items:flex-start;gap:8px">'
+        + '<span class="online-dot ' + (isOnline?'yes':'no') + '" style="margin-top:3px"></span>'
         + '<div>'
-        + '<div class="device-name">' + escHtml(d.device_name || 'Unknown') + '</div>'
+        + '<div class="device-name">'
+            + escHtml(d.device_name || 'Unknown')
+            + aliasBadge
+            + '<button class="btn-alias" onclick="openAliasModal(' + i + ')" title="Label দিন">✏️</button>'
+        + '</div>'
         + '<div class="device-id">' + escHtml(d.device_id || '—') + '</div>'
         + blockReasonHtml
         + '</div></div></td>'
@@ -524,7 +622,7 @@
     }).join('');
   }
 
-  // index-based wrappers
+  // ── INDEX-BASED WRAPPERS ──────────────────────────────
   function openBlockByIndex(i) {
     const d = currentList[i];
     if (!d) { showToast('❌ Device not found!', true); return; }
@@ -541,13 +639,51 @@
     deleteDevice(d.device_id);
   }
 
+  // ── ALIAS MODAL ───────────────────────────────────────
+  function openAliasModal(i) {
+    const d = currentList[i];
+    if (!d) return;
+    pendingAliasId = d.device_id;
+
+    const existing = getAlias(d.device_id);
+    document.getElementById('alias-modal-info').textContent =
+      'Device: ' + (d.device_name || 'Unknown') + '  ·  ID: ' + d.device_id;
+    document.getElementById('alias-input').value = existing;
+    document.getElementById('alias-modal').classList.add('open');
+    setTimeout(() => document.getElementById('alias-input').focus(), 100);
+  }
+
+  function closeAliasModal() {
+    document.getElementById('alias-modal').classList.remove('open');
+    pendingAliasId = '';
+  }
+
+  function confirmAlias() {
+    const alias = document.getElementById('alias-input').value.trim();
+    if (!pendingAliasId) { closeAliasModal(); return; }
+    saveAlias(pendingAliasId, alias);
+    closeAliasModal();
+    renderTable(); // re-render so alias shows up immediately
+    if (alias) showToast('✅ Label save হয়েছে: ' + alias);
+    else showToast('🗑 Label মুছে ফেলা হয়েছে');
+  }
+
+  function clearAlias() {
+    if (!pendingAliasId) { closeAliasModal(); return; }
+    saveAlias(pendingAliasId, '');
+    closeAliasModal();
+    renderTable();
+    showToast('🗑 Label মুছে ফেলা হয়েছে');
+  }
+
+  document.getElementById('alias-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmAlias();
+    if (e.key === 'Escape') closeAliasModal();
+  });
+
   // ── BLOCK MODAL ───────────────────────────────────────
   function openBlockModal(deviceId, deviceName) {
-    // ✅ FIX: এখন deviceId সরাসরি JS value হিসেবে আসছে, string manipulation নেই
-    if (!deviceId) {
-      showToast('❌ Device ID পাওয়া যায়নি!', true);
-      return;
-    }
+    if (!deviceId) { showToast('❌ Device ID পাওয়া যায়নি!', true); return; }
     pendingBlockId = deviceId;
     document.getElementById('modal-device-info').textContent =
       'Device: ' + (deviceName || 'Unknown') + ' (' + deviceId + ')';
@@ -567,15 +703,10 @@
   });
 
   function confirmBlock() {
-    // modal এর input থেকে device_id পড়ি — pendingBlockId এর উপর নির্ভর না করে
     const info = document.getElementById('modal-device-info').textContent;
     const match = info.match(/\(([^)]+)\)$/);
     const deviceId = match ? match[1].trim() : pendingBlockId;
-    if (!deviceId) {
-      showToast('❌ Device ID missing!', true);
-      closeModal();
-      return;
-    }
+    if (!deviceId) { showToast('❌ Device ID missing!', true); closeModal(); return; }
     const reason = document.getElementById('block-reason-input').value.trim()
       || 'Admin কর্তৃক block করা হয়েছে';
     closeModal();
@@ -584,10 +715,6 @@
 
   // ── API CALLS ─────────────────────────────────────────
   function blockDevice(deviceId, reason) {
-    if (!deviceId) {
-      showToast('❌ device_id required!', true);
-      return;
-    }
     fetch(`${BASE}/api/admin/block?password=${encodeURIComponent(adminPw)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -603,10 +730,6 @@
   }
 
   function unblockDevice(deviceId) {
-    if (!deviceId) {
-      showToast('❌ device_id required!', true);
-      return;
-    }
     fetch(`${BASE}/api/admin/unblock?password=${encodeURIComponent(adminPw)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -622,10 +745,6 @@
   }
 
   function deleteDevice(deviceId) {
-    if (!deviceId) {
-      showToast('❌ device_id required!', true);
-      return;
-    }
     if (!confirm('এই device টা permanently delete করবেন?')) return;
     fetch(`${BASE}/api/admin/delete?password=${encodeURIComponent(adminPw)}`, {
       method: 'POST',
