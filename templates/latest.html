@@ -17,6 +17,7 @@
             --border: #1e1e1e;
             --text:   #d0d0d0;
             --muted:  #555;
+            --cyan:   #00e5ff;
         }
 
         body {
@@ -25,6 +26,116 @@
             font-family: 'Courier New', monospace;
             min-height: 100vh;
         }
+
+        /* ══════════════════════════════════════
+           LOCK SCREEN
+        ══════════════════════════════════════ */
+        #lockScreen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #0a1a1f 0%, #050a0d 100%);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #lockScreen.active { display: flex; }
+
+        .lock-box {
+            background: #0e0e0e;
+            border: 1px solid #1a2a2a;
+            border-top: 3px solid var(--cyan);
+            border-radius: 12px;
+            padding: 44px 40px 36px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(0,229,255,0.05);
+        }
+
+        .lock-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .lock-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 3px;
+            margin-bottom: 4px;
+        }
+
+        .lock-sub {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .lock-input {
+            width: 100%;
+            padding: 13px 16px;
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 7px;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            transition: border-color .2s;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+
+        .lock-input:focus { border-color: var(--cyan); }
+        .lock-input.error { border-color: #ff4444; animation: shake .3s; }
+
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            25%{transform:translateX(-6px)}
+            75%{transform:translateX(6px)}
+        }
+
+        .lock-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--cyan);
+            border: none;
+            border-radius: 7px;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: background .2s, transform .1s;
+        }
+
+        .lock-btn:hover  { background: #00c8e0; }
+        .lock-btn:active { transform: scale(.98); }
+
+        .lock-error {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #ff5555;
+            min-height: 18px;
+            letter-spacing: 1px;
+        }
+
+        .lock-footer {
+            margin-top: 28px;
+            font-size: 10px;
+            color: #1e1e1e;
+            letter-spacing: 1px;
+        }
+
+        /* ══════════════════════════════════════
+           MAIN DASHBOARD (same as before)
+        ══════════════════════════════════════ */
+        #mainApp { display: none; }
+        #mainApp.active { display: block; }
 
         header {
             display: flex;
@@ -90,6 +201,19 @@
         }
         .upload-link:hover { border-color: var(--green); color: var(--green); }
 
+        .logout-btn {
+            font-size: 11px;
+            padding: 5px 12px;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            color: #555;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .2s;
+        }
+        .logout-btn:hover { border-color: #ff4444; color: #ff4444; }
+
         .stats {
             display: flex;
             gap: 14px;
@@ -120,9 +244,7 @@
             line-height: 1;
         }
 
-        .content {
-            padding: 22px 28px 40px;
-        }
+        .content { padding: 22px 28px 40px; }
 
         .toolbar {
             display: flex;
@@ -137,10 +259,7 @@
             color: #fff;
         }
 
-        #lastRefresh {
-            font-size: 12px;
-            color: var(--muted);
-        }
+        #lastRefresh { font-size: 12px; color: var(--muted); }
 
         .table-wrap {
             border-radius: 10px;
@@ -174,10 +293,7 @@
         tbody tr:last-child { border-bottom: none; }
         tbody tr:hover { background: var(--bg4); }
 
-        tbody td {
-            padding: 13px 16px;
-            vertical-align: middle;
-        }
+        tbody td { padding: 13px 16px; vertical-align: middle; }
 
         .badge {
             display: inline-block;
@@ -254,6 +370,33 @@
 </head>
 <body>
 
+<!-- ══════════════════════════════════════
+     LOCK SCREEN
+══════════════════════════════════════ -->
+<div id="lockScreen">
+    <div class="lock-box">
+        <div class="lock-icon">⚡</div>
+        <div class="lock-title">LUCKYLOOP</div>
+        <div class="lock-sub">LIVE DATA · SECURE ACCESS</div>
+        <input
+            type="password"
+            id="pwInput"
+            class="lock-input"
+            placeholder="পাসওয়ার্ড দিন..."
+            autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') doLogin()"
+        />
+        <button class="lock-btn" onclick="doLogin()">→ প্রবেশ করুন</button>
+        <div class="lock-error" id="lockError"></div>
+        <div class="lock-footer">LUCKYLOOP © 2024–2026 · Prince Alif</div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
+<div id="mainApp">
+
 <header>
     <div class="brand">
         🔸 LuckyLoop Live Data
@@ -265,6 +408,7 @@
             <span id="liveText">Connecting…</span>
         </div>
         <a href="/" class="upload-link">⬆ Manual Upload</a>
+        <button class="logout-btn" onclick="doLogout()">⎋ Logout</button>
     </div>
 </header>
 
@@ -323,9 +467,90 @@
 </div>
 
 <footer>Created by Prince Alif &copy; LuckyLoop 2024–2026 &nbsp;|&nbsp; All rights reserved</footer>
+
+</div><!-- /mainApp -->
+
 <div id="toast"></div>
 
 <script>
+    // ── Server থেকে locked state পাওয়া ──────────────────────
+    const SERVER_LOCKED = {{ 'true' if locked else 'false' }};
+
+    // ── Init: lock screen দেখানো বা না দেখানো ───────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        if (SERVER_LOCKED) {
+            document.getElementById('lockScreen').classList.add('active');
+            setTimeout(() => document.getElementById('pwInput').focus(), 100);
+        } else {
+            document.getElementById('mainApp').classList.add('active');
+            startDashboard();
+        }
+    });
+
+    // ── Login ────────────────────────────────────────────────
+    async function doLogin() {
+        const pw    = document.getElementById('pwInput').value;
+        const input = document.getElementById('pwInput');
+        const errEl = document.getElementById('lockError');
+
+        if (!pw) {
+            shakeInput();
+            errEl.textContent = '⚠ পাসওয়ার্ড খালি রাখবেন না';
+            return;
+        }
+
+        const btn = document.querySelector('.lock-btn');
+        btn.textContent = 'যাচাই করা হচ্ছে…';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/viewer-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+
+            if (res.ok) {
+                // Success — show dashboard
+                document.getElementById('lockScreen').classList.remove('active');
+                document.getElementById('mainApp').classList.add('active');
+                startDashboard();
+            } else {
+                shakeInput();
+                errEl.textContent = '❌ ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।';
+                document.getElementById('pwInput').value = '';
+                document.getElementById('pwInput').focus();
+            }
+        } catch (e) {
+            errEl.textContent = '⚠ Connection error. Retry.';
+        } finally {
+            btn.textContent = '→ প্রবেশ করুন';
+            btn.disabled = false;
+        }
+    }
+
+    function shakeInput() {
+        const input = document.getElementById('pwInput');
+        input.classList.add('error');
+        setTimeout(() => input.classList.remove('error'), 500);
+    }
+
+    // ── Logout ───────────────────────────────────────────────
+    function doLogout() {
+        window.location.href = '/viewer-logout';
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  DASHBOARD LOGIC
+    // ══════════════════════════════════════════════════════════
+
+    let refreshTimer = null;
+
+    function startDashboard() {
+        fetchData();
+        refreshTimer = setInterval(fetchData, 5000);
+    }
+
     function esc(s) {
         return String(s ?? '')
             .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -334,8 +559,6 @@
 
     function timeAgo(iso) {
         if (!iso) return '–';
-        // ✅ FIX: Python isoformat() → "2024-01-15T14:27:24.123456"
-        // Browser সঠিকভাবে parse করার জন্য space→T এবং microsecond বাদ দিয়ে Z যোগ
         const fixed = iso.replace(' ', 'T').split('.')[0] + 'Z';
         const s = (Date.now() - new Date(fixed)) / 1000;
         if (s < 10)    return 'just now';
@@ -369,7 +592,18 @@
 
     async function fetchData() {
         try {
-            const res  = await fetch('/api/latest');
+            const res = await fetch('/api/latest');
+
+            // Session শেষ হলে → lock screen এ ফিরে যাও
+            if (res.status === 401) {
+                clearInterval(refreshTimer);
+                document.getElementById('mainApp').classList.remove('active');
+                document.getElementById('lockScreen').classList.add('active');
+                document.getElementById('lockError').textContent = '⚠ Session শেষ। আবার লগিন করুন।';
+                setTimeout(() => document.getElementById('pwInput').focus(), 100);
+                return;
+            }
+
             if (!res.ok) throw new Error('HTTP ' + res.status);
 
             const data = await res.json();
@@ -390,7 +624,7 @@
             const emptyEl = document.getElementById('emptyMsg');
 
             if (!rows.length) {
-                tbody.innerHTML    = '';
+                tbody.innerHTML       = '';
                 emptyEl.style.display = 'block';
                 return;
             }
@@ -424,9 +658,6 @@
             console.error('[LuckyLoop]', e);
         }
     }
-
-    fetchData();
-    setInterval(fetchData, 5000);
 </script>
 </body>
 </html>
