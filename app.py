@@ -104,8 +104,6 @@ def latest():
 
 @app.route("/api/latest")
 def api_latest():
-    if not is_viewer_logged_in():
-        return jsonify({"error": "Unauthorized"}), 401
     conn = get_db()
     rows = conn.execute(
         "SELECT * FROM jobs ORDER BY updated_at DESC"
