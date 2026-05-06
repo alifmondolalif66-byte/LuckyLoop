@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_cors import CORS
 import sqlite3
 from datetime import datetime
@@ -7,10 +7,16 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+# ── Secret key for session (change this!) ──────────────────
+app.secret_key = os.environ.get("SECRET_KEY", "luckyloop_secret_key_2024_xk92")
+
 DB = os.path.join(os.environ.get("DB_PATH", "."), "jobs.db")
 
-# ── Admin password (change this!) ──────────────────────────
+# ── Admin password ──────────────────────────────────────────
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "luckyloop_admin_2024")
+
+# ── Viewer password (for /latest page) ─────────────────────
+VIEWER_PASSWORD = os.environ.get("VIEWER_PASSWORD", "luckyloop2024")
 
 def init_db():
     conn = sqlite3.connect(DB)
@@ -33,7 +39,6 @@ def init_db():
             updated_at TEXT
         )
     """)
-    # ── NEW: devices table ──────────────────────────────────
     c.execute("""
         CREATE TABLE IF NOT EXISTS devices (
             device_id    TEXT PRIMARY KEY,
@@ -59,20 +64,48 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def is_viewer_logged_in():
+    return session.get("viewer_logged_in") is True
+
 # ══════════════════════════════════════════════════════════
-#  EXISTING ROUTES (unchanged)
+#  VIEWER LOGIN/LOGOUT
+# ══════════════════════════════════════════════════════════
+
+@app.route("/viewer-login", methods=["POST"])
+def viewer_login():
+    data = request.get_json(silent=True) or {}
+    pw = str(data.get("password", "") or "").strip()
+    if pw == VIEWER_PASSWORD:
+        session["viewer_logged_in"] = True
+        session.permanent = True
+        return jsonify({"ok": True})
+    return jsonify({"ok": False, "error": "ভুল পাসওয়ার্ড"}), 401
+
+@app.route("/viewer-logout")
+def viewer_logout():
+    session.pop("viewer_logged_in", None)
+    return redirect("/latest")
+
+# ══════════════════════════════════════════════════════════
+#  PROTECTED ROUTES
 # ══════════════════════════════════════════════════════════
 
 @app.route("/")
 def home():
+    if not is_viewer_logged_in():
+        return render_template("latest.html", locked=True)
     return render_template("index.html")
 
 @app.route("/latest")
 def latest():
-    return render_template("latest.html")
+    if not is_viewer_logged_in():
+        return render_template("latest.html", locked=True)
+    return render_template("latest.html", locked=False)
 
 @app.route("/api/latest")
 def api_latest():
+    if not is_viewer_logged_in():
+        return jsonify({"error": "Unauthorized"}), 401
     conn = get_db()
     rows = conn.execute(
         "SELECT * FROM jobs ORDER BY updated_at DESC"
@@ -91,6 +124,10 @@ def api_latest():
         "scraper_ok": scraper_ok,
         "scraper_msg": scraper_msg
     })
+
+# ══════════════════════════════════════════════════════════
+#  EXISTING ROUTES (unchanged)
+# ══════════════════════════════════════════════════════════
 
 @app.route("/api/scraper-status", methods=["POST"])
 def update_scraper_status():
@@ -143,24 +180,22 @@ def save_job():
     print(f"[SAVED] {job_name}  |  pos={position}  |  avail={available}  |  {now}")
     return jsonify({"status": "saved", "job_name": job_name})
 
-
 # ══════════════════════════════════════════════════════════
-#  NEW: DEVICE MANAGEMENT ROUTES
+#  DEVICE MANAGEMENT ROUTES
 # ══════════════════════════════════════════════════════════
 
 @app.route("/api/heartbeat", methods=["POST"])
 def heartbeat():
-    """Python app startup এ call করবে — device register করে"""
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"ok": False, "blocked": False}), 400
 
-    device_id   = str(data.get("device_id",   "") or "").strip()
-    device_name = str(data.get("device_name", "") or "Unknown").strip()
-    license_key = str(data.get("license_key", "") or "").strip()
+    device_id    = str(data.get("device_id",    "") or "").strip()
+    device_name  = str(data.get("device_name",  "") or "Unknown").strip()
+    license_key  = str(data.get("license_key",  "") or "").strip()
     license_type = str(data.get("license_type", "") or "").strip()
-    ip_address  = request.headers.get("X-Forwarded-For", request.remote_addr or "")
-    now         = datetime.now().isoformat()
+    ip_address   = request.headers.get("X-Forwarded-For", request.remote_addr or "")
+    now          = datetime.now().isoformat()
 
     if not device_id:
         return jsonify({"ok": False, "blocked": False, "reason": "no device_id"}), 400
@@ -171,7 +206,6 @@ def heartbeat():
     ).fetchone()
 
     if existing:
-        # Update last seen + info, but don't change block status
         conn.execute("""
             UPDATE devices SET
                 device_name  = ?,
@@ -181,10 +215,9 @@ def heartbeat():
                 last_seen    = ?
             WHERE device_id = ?
         """, (device_name, license_key, license_type, ip_address, now, device_id))
-        is_blocked = bool(existing["is_blocked"])
+        is_blocked   = bool(existing["is_blocked"])
         block_reason = existing["block_reason"] or ""
     else:
-        # New device — register
         conn.execute("""
             INSERT INTO devices
                 (device_id, device_name, license_key, license_type, ip_address, first_seen, last_seen, is_blocked)
@@ -206,7 +239,6 @@ def heartbeat():
 
 @app.route("/api/check/<device_id>", methods=["GET"])
 def check_device(device_id):
-    """App চলার সময় বারবার call করবে — blocked কিনা check করতে"""
     conn = get_db()
     row = conn.execute(
         "SELECT is_blocked, block_reason FROM devices WHERE device_id=?", (device_id,)
@@ -225,19 +257,16 @@ def check_device(device_id):
 
     return jsonify({"ok": True, "blocked": False})
 
-
 # ══════════════════════════════════════════════════════════
-#  NEW: ADMIN ROUTES
+#  ADMIN ROUTES
 # ══════════════════════════════════════════════════════════
 
 def check_admin(req):
-    """Simple password check via header or query param"""
     pw = req.headers.get("X-Admin-Password") or req.args.get("password") or ""
     return pw == ADMIN_PASSWORD
 
 @app.route("/admin")
 def admin_panel():
-    """Admin panel page"""
     return render_template("admin.html")
 
 @app.route("/api/admin/devices", methods=["GET"])
