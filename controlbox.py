@@ -1,10 +1,11 @@
 """
-LuckyLoop Controlbox 16.3.5 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
+LuckyLoop Controlbox 16.0.5 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
 ✨ Updated: Network Time Sync with Seconds Precision + Admin Auto-Elevation
 🔧 Fixed: _auto_sync_loop now uses sync_time_force() (NTP direct) instead of windows_sync_now()
 🆕 Auto sync will now match time.is — proper 4-timestamp RFC 5905 algorithm via ntplib
 🔧 Fixed: ntplib used in get_ntp_time() — multiple servers, best sample filtering
 🆕 Auto Update: GitHub থেকে auto update support
+🆕 Version display in header
 """
 
 import sys
@@ -55,7 +56,6 @@ class AutoUpdater:
         try:
             ctx = ssl.create_default_context()
 
-            # Latest version চেক করো
             req = urllib.request.Request(
                 GITHUB_VERSION_URL,
                 headers={"User-Agent": "LuckyLoop-Controlbox/AutoUpdate"}
@@ -69,7 +69,6 @@ class AutoUpdater:
 
             print(f"[UPDATE] New version found: {latest_version}, updating...")
 
-            # নতুন script download করো
             req2 = urllib.request.Request(
                 GITHUB_SCRIPT_URL,
                 headers={"User-Agent": "LuckyLoop-Controlbox/AutoUpdate"}
@@ -77,21 +76,17 @@ class AutoUpdater:
             with urllib.request.urlopen(req2, timeout=30, context=ctx) as r:
                 new_code = r.read()
 
-            # নিজেকে replace করো
             script_path = os.path.abspath(sys.argv[0])
             backup_path = script_path + ".bak"
 
-            # পুরনো file backup রাখো
             with open(script_path, "rb") as f:
                 old_code = f.read()
             with open(backup_path, "wb") as f:
                 f.write(old_code)
 
-            # নতুন file লেখো
             with open(script_path, "wb") as f:
                 f.write(new_code)
 
-            # Restart করো
             pythonw = sys.executable.replace("python.exe", "pythonw.exe")
             if not os.path.exists(pythonw):
                 pythonw = sys.executable
@@ -266,7 +261,7 @@ class DeviceChecker:
                 data=payload,
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "LuckyLoop-Controlbox/16.3.5"
+                    "User-Agent": "LuckyLoop-Controlbox/16.0.5"
                 },
                 method="POST"
             )
@@ -284,7 +279,7 @@ class DeviceChecker:
             ctx = ssl.create_default_context()
             req = urllib.request.Request(
                 f"{SERVER_BASE}/api/check/{self.lm.device_id}",
-                headers={"User-Agent": "LuckyLoop-Controlbox/16.3.5"}
+                headers={"User-Agent": "LuckyLoop-Controlbox/16.0.5"}
             )
             with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -697,7 +692,7 @@ class ApiScraper(threading.Thread):
     def _fetch(self):
         import urllib.request, ssl
         ctx = ssl.create_default_context()
-        req = urllib.request.Request(API_URL, headers={"User-Agent": "LuckyLoop-Controlbox/16.3.5"})
+        req = urllib.request.Request(API_URL, headers={"User-Agent": "LuckyLoop-Controlbox/16.0.5"})
         with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
             raw  = resp.read().decode("utf-8")
             data = json.loads(raw)
@@ -884,7 +879,7 @@ class InstantApp(tk.Tk):
     def __init__(self, license_manager):
         super().__init__()
         self.license_manager = license_manager
-        self.title("Luckyloop Controlbox v16.3.5")
+        self.title("Luckyloop Controlbox v16.0.5")
 
         screen_h      = self.winfo_screenheight()
         TASKBAR_H     = 60
@@ -1006,6 +1001,9 @@ class InstantApp(tk.Tk):
 
         tk.Label(left, text="LuckyLoop", font=("Segoe UI", 18, "bold"), fg=WHITE, bg=CARD).pack(side="left")
         tk.Label(left, text=" Position Update", font=("Segoe UI", 14), fg=YELLOW, bg=CARD).pack(side="left")
+
+        # ✅ VERSION LABEL — এখানে version show হবে
+        tk.Label(left, text=f"  v{CURRENT_VERSION}", font=("Segoe UI", 8), fg=MUTED, bg=CARD).pack(side="left", pady=(8, 0))
 
         right = tk.Frame(bar, bg=CARD)
         right.pack(side="right", padx=15)
