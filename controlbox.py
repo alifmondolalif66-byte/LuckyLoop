@@ -1,5 +1,5 @@
 """
-LuckyLoop Controlbox 16.0.5 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
+LuckyLoop Controlbox 16.0.6 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
 ✨ Updated: Network Time Sync with Seconds Precision + Admin Auto-Elevation
 🔧 Fixed: _auto_sync_loop now uses sync_time_force() (NTP direct) instead of windows_sync_now()
 🆕 Auto sync will now match time.is — proper 4-timestamp RFC 5905 algorithm via ntplib
