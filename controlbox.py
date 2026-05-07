@@ -1,11 +1,12 @@
 """
-LuckyLoop Controlbox 16.0.6 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
+LuckyLoop Controlbox 16.0.7 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
 ✨ Updated: Network Time Sync with Seconds Precision + Admin Auto-Elevation
 🔧 Fixed: _auto_sync_loop now uses sync_time_force() (NTP direct) instead of windows_sync_now()
 🆕 Auto sync will now match time.is — proper 4-timestamp RFC 5905 algorithm via ntplib
 🔧 Fixed: ntplib used in get_ntp_time() — multiple servers, best sample filtering
 🆕 Auto Update: GitHub থেকে auto update support
 🆕 Version display in header
+🆕 License reset button hidden
 """
 
 import sys
@@ -46,7 +47,7 @@ from concurrent.futures import ThreadPoolExecutor
 # ══════════════════════════════════════════════════════
 # AUTO UPDATER — GitHub থেকে auto update
 # ══════════════════════════════════════════════════════
-CURRENT_VERSION    = "16.0.6"
+CURRENT_VERSION    = "16.0.7"
 GITHUB_VERSION_URL = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/version.txt"
 GITHUB_SCRIPT_URL  = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/controlbox.py"
 
@@ -261,7 +262,7 @@ class DeviceChecker:
                 data=payload,
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "LuckyLoop-Controlbox/16.0.6"
+                    "User-Agent": f"LuckyLoop-Controlbox/{CURRENT_VERSION}"
                 },
                 method="POST"
             )
@@ -279,7 +280,7 @@ class DeviceChecker:
             ctx = ssl.create_default_context()
             req = urllib.request.Request(
                 f"{SERVER_BASE}/api/check/{self.lm.device_id}",
-                headers={"User-Agent": "LuckyLoop-Controlbox/16.0.5"}
+                headers={"User-Agent": f"LuckyLoop-Controlbox/{CURRENT_VERSION}"}
             )
             with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
@@ -692,7 +693,7 @@ class ApiScraper(threading.Thread):
     def _fetch(self):
         import urllib.request, ssl
         ctx = ssl.create_default_context()
-        req = urllib.request.Request(API_URL, headers={"User-Agent": "LuckyLoop-Controlbox/16.0.5"})
+        req = urllib.request.Request(API_URL, headers={"User-Agent": f"LuckyLoop-Controlbox/{CURRENT_VERSION}"})
         with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
             raw  = resp.read().decode("utf-8")
             data = json.loads(raw)
@@ -879,7 +880,7 @@ class InstantApp(tk.Tk):
     def __init__(self, license_manager):
         super().__init__()
         self.license_manager = license_manager
-        self.title("Luckyloop Controlbox v16.0.5")
+        self.title(f"Luckyloop Controlbox v{CURRENT_VERSION}")
 
         screen_h      = self.winfo_screenheight()
         TASKBAR_H     = 60
@@ -1001,23 +1002,13 @@ class InstantApp(tk.Tk):
 
         tk.Label(left, text="LuckyLoop", font=("Segoe UI", 18, "bold"), fg=WHITE, bg=CARD).pack(side="left")
         tk.Label(left, text=" Position Update", font=("Segoe UI", 14), fg=YELLOW, bg=CARD).pack(side="left")
-
-        # ✅ VERSION LABEL — এখানে version show হবে
         tk.Label(left, text=f"  v{CURRENT_VERSION}", font=("Segoe UI", 8), fg=MUTED, bg=CARD).pack(side="left", pady=(8, 0))
 
+        # ✅ License label & reset button — HIDDEN
         right = tk.Frame(bar, bg=CARD)
         right.pack(side="right", padx=15)
-
-        license_frame = tk.Frame(right, bg=CARD)
-        license_frame.pack()
-        license_text, license_color = self.license_manager.get_license_info()
-        self._license_lbl = tk.Label(license_frame, text=license_text, font=("Segoe UI", 8), fg=license_color, bg=CARD)
-        self._license_lbl.pack(side="left", padx=(0, 5))
-
-        reset_btn = tk.Button(license_frame, text="🔄", font=("Segoe UI", 7, "bold"), fg="#fff", bg="#ff6b6b",
-                              activebackground="#ff5252", relief="flat", bd=0, padx=4, pady=0,
-                              cursor="hand2", command=self._reset_license)
-        reset_btn.pack(side="left")
+        self._license_lbl = tk.Label(right, text="", font=("Segoe UI", 8), fg=CARD, bg=CARD)
+        self._license_lbl.pack()
 
     def _build_cookie_bar(self):
         self._cookie_bar = tk.Frame(self, bg="#3d0000", pady=8)
@@ -1044,8 +1035,6 @@ class InstantApp(tk.Tk):
         is_licensed, new_license_mgr = show_license_dialog(is_reset=True)
         if is_licensed:
             self.license_manager = new_license_mgr
-            license_text, license_color = self.license_manager.get_license_info()
-            self.after(0, lambda: self._license_lbl.config(text=license_text, fg=license_color))
             self.after(0, lambda: self._set_status("✅ License Changed", GREEN))
             self._launch_scraper()
         else:
