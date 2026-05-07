@@ -1,5 +1,5 @@
 """
-LuckyLoop Controlbox 16.0.7 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
+LuckyLoop Controlbox 16.0.5 - ENTERPRISE MULTI-DEVICE LICENSE SYSTEM
 ✨ Updated: Network Time Sync with Seconds Precision + Admin Auto-Elevation
 🔧 Fixed: _auto_sync_loop now uses sync_time_force() (NTP direct) instead of windows_sync_now()
 🆕 Auto sync will now match time.is — proper 4-timestamp RFC 5905 algorithm via ntplib
@@ -47,7 +47,7 @@ from concurrent.futures import ThreadPoolExecutor
 # ══════════════════════════════════════════════════════
 # AUTO UPDATER — GitHub থেকে auto update
 # ══════════════════════════════════════════════════════
-CURRENT_VERSION    = "16.0.7"
+CURRENT_VERSION    = "16.0.5"
 GITHUB_VERSION_URL = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/version.txt"
 GITHUB_SCRIPT_URL  = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/controlbox.py"
 
