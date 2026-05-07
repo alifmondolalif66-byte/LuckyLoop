@@ -261,7 +261,7 @@ class DeviceChecker:
                 data=payload,
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "LuckyLoop-Controlbox/16.0.5"
+                    "User-Agent": "LuckyLoop-Controlbox/16.0.6"
                 },
                 method="POST"
             )
