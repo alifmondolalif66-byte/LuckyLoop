@@ -46,7 +46,7 @@ from concurrent.futures import ThreadPoolExecutor
 # ══════════════════════════════════════════════════════
 # AUTO UPDATER — GitHub থেকে auto update
 # ══════════════════════════════════════════════════════
-CURRENT_VERSION    = "16.0.6"
+CURRENT_VERSION    = "16.0.5"
 GITHUB_VERSION_URL = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/version.txt"
 GITHUB_SCRIPT_URL  = "https://raw.githubusercontent.com/alifmondolalif66-byte/luckyloop-tracker/main/controlbox.py"
 
