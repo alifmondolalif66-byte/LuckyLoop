@@ -27,9 +27,6 @@
             min-height: 100vh;
         }
 
-        /* ══════════════════════════════════════
-           LOCK SCREEN
-        ══════════════════════════════════════ */
         #lockScreen {
             display: none;
             position: fixed;
@@ -54,25 +51,9 @@
             box-shadow: 0 0 60px rgba(0,229,255,0.05);
         }
 
-        .lock-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-
-        .lock-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #fff;
-            letter-spacing: 3px;
-            margin-bottom: 4px;
-        }
-
-        .lock-sub {
-            font-size: 11px;
-            color: var(--muted);
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-        }
+        .lock-icon { font-size: 36px; margin-bottom: 10px; }
+        .lock-title { font-size: 22px; font-weight: bold; color: #fff; letter-spacing: 3px; margin-bottom: 4px; }
+        .lock-sub { font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-bottom: 30px; }
 
         .lock-input {
             width: 100%;
@@ -116,24 +97,9 @@
         .lock-btn:hover  { background: #00c8e0; }
         .lock-btn:active { transform: scale(.98); }
 
-        .lock-error {
-            margin-top: 12px;
-            font-size: 12px;
-            color: #ff5555;
-            min-height: 18px;
-            letter-spacing: 1px;
-        }
+        .lock-error { margin-top: 12px; font-size: 12px; color: #ff5555; min-height: 18px; letter-spacing: 1px; }
+        .lock-footer { margin-top: 28px; font-size: 10px; color: #1e1e1e; letter-spacing: 1px; }
 
-        .lock-footer {
-            margin-top: 28px;
-            font-size: 10px;
-            color: #1e1e1e;
-            letter-spacing: 1px;
-        }
-
-        /* ══════════════════════════════════════
-           MAIN DASHBOARD (same as before)
-        ══════════════════════════════════════ */
         #mainApp { display: none; }
         #mainApp.active { display: block; }
 
@@ -149,44 +115,15 @@
             z-index: 100;
         }
 
-        .brand {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--green);
-            letter-spacing: 1px;
-        }
+        .brand { font-size: 20px; font-weight: bold; color: var(--green); letter-spacing: 1px; }
+        .brand small { font-size: 12px; color: var(--muted); font-weight: normal; margin-left: 12px; }
 
-        .brand small {
-            font-size: 12px;
-            color: var(--muted);
-            font-weight: normal;
-            margin-left: 12px;
-        }
+        .header-right { display: flex; align-items: center; gap: 18px; }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
+        #liveDot { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
 
-        #liveDot {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: var(--muted);
-        }
-
-        .dot.live {
-            background: var(--green);
-            animation: blink 1.4s infinite;
-        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+        .dot.live { background: var(--green); animation: blink 1.4s infinite; }
 
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
@@ -214,12 +151,7 @@
         }
         .logout-btn:hover { border-color: #ff4444; color: #ff4444; }
 
-        .stats {
-            display: flex;
-            gap: 14px;
-            padding: 22px 28px 0;
-            flex-wrap: wrap;
-        }
+        .stats { display: flex; gap: 14px; padding: 22px 28px 0; flex-wrap: wrap; }
 
         .stat {
             background: var(--bg3);
@@ -229,49 +161,18 @@
             min-width: 130px;
         }
 
-        .stat-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            color: var(--muted);
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--green);
-            margin-top: 5px;
-            line-height: 1;
-        }
+        .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+        .stat-value { font-size: 28px; font-weight: bold; color: var(--green); margin-top: 5px; line-height: 1; }
 
         .content { padding: 22px 28px 40px; }
 
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #fff;
-        }
-
+        .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .section-title { font-size: 15px; font-weight: bold; color: #fff; }
         #lastRefresh { font-size: 12px; color: var(--muted); }
 
-        .table-wrap {
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
+        .table-wrap { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
 
         thead th {
             padding: 13px 16px;
@@ -285,24 +186,12 @@
             white-space: nowrap;
         }
 
-        tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background .15s;
-        }
-
+        tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
         tbody tr:last-child { border-bottom: none; }
         tbody tr:hover { background: var(--bg4); }
-
         tbody td { padding: 13px 16px; vertical-align: middle; }
 
-        .badge {
-            display: inline-block;
-            padding: 3px 13px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
+        .badge { display: inline-block; padding: 3px 13px; border-radius: 20px; font-weight: bold; font-size: 13px; }
         .avail-high { background: #003920; color: var(--green); }
         .avail-mid  { background: #362500; color: #ffcc00; }
         .avail-low  { background: #380000; color: #ff6060; }
@@ -344,9 +233,23 @@
         #emptyMsg {
             padding: 60px;
             text-align: center;
-            color: #2a2a2a;
+            color: #555;
             font-size: 15px;
             display: none;
+        }
+
+        /* ── Spinner animation ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid #1a1a1a;
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
         }
 
         #toast {
@@ -359,20 +262,12 @@
             pointer-events: none; z-index: 9999;
         }
 
-        footer {
-            text-align: center;
-            padding: 22px;
-            color: #1e1e1e;
-            font-size: 12px;
-            border-top: 1px solid #111;
-        }
+        footer { text-align: center; padding: 22px; color: #1e1e1e; font-size: 12px; border-top: 1px solid #111; }
     </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     LOCK SCREEN
-══════════════════════════════════════ -->
+<!-- LOCK SCREEN -->
 <div id="lockScreen">
     <div class="lock-box">
         <div class="lock-icon">⚡</div>
@@ -392,9 +287,7 @@
     </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MAIN APP
-══════════════════════════════════════ -->
+<!-- MAIN APP -->
 <div id="mainApp">
 
 <header>
@@ -457,12 +350,16 @@
                 </tr>
             </tbody>
         </table>
+
+        <!-- ✅ FIXED: Server update message -->
         <div id="emptyMsg">
-            ⚠️ No data yet.<br>
-            <span style="font-size:13px;color:#333;margin-top:8px;display:block;">
-                The extension will push data automatically when it detects jobs on MicroWorkers.
+            <span class="spinner"></span>
+            🔄 Server update চলছে...<br>
+            <span style="font-size:13px;color:#333;margin-top:10px;display:block;">
+                একটু অপেক্ষা করুন, ডেটা আসছে...
             </span>
         </div>
+
     </div>
 </div>
 
@@ -473,10 +370,8 @@
 <div id="toast"></div>
 
 <script>
-    // ── Server থেকে locked state পাওয়া ──────────────────────
     const SERVER_LOCKED = {{ 'true' if locked else 'false' }};
 
-    // ── Init: lock screen দেখানো বা না দেখানো ───────────────
     window.addEventListener('DOMContentLoaded', () => {
         if (SERVER_LOCKED) {
             document.getElementById('lockScreen').classList.add('active');
@@ -487,7 +382,6 @@
         }
     });
 
-    // ── Login ────────────────────────────────────────────────
     async function doLogin() {
         const pw    = document.getElementById('pwInput').value;
         const input = document.getElementById('pwInput');
@@ -511,7 +405,6 @@
             });
 
             if (res.ok) {
-                // Success — show dashboard
                 document.getElementById('lockScreen').classList.remove('active');
                 document.getElementById('mainApp').classList.add('active');
                 startDashboard();
@@ -535,14 +428,9 @@
         setTimeout(() => input.classList.remove('error'), 500);
     }
 
-    // ── Logout ───────────────────────────────────────────────
     function doLogout() {
         window.location.href = '/viewer-logout';
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  DASHBOARD LOGIC
-    // ══════════════════════════════════════════════════════════
 
     let refreshTimer = null;
 
@@ -594,7 +482,6 @@
         try {
             const res = await fetch('/api/latest');
 
-            // Session শেষ হলে → lock screen এ ফিরে যাও
             if (res.status === 401) {
                 clearInterval(refreshTimer);
                 document.getElementById('mainApp').classList.remove('active');
