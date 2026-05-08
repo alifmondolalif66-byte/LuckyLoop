@@ -112,30 +112,13 @@ def api_latest():
         "SELECT * FROM scraper_status WHERE id=1"
     ).fetchone()
     conn.close()
-
     scraper_ok = True
     scraper_msg = "OK"
     if status_row:
         scraper_ok = status_row["status"] == "ok"
         scraper_msg = status_row["message"]
-
-    jobs = [dict(r) for r in rows]
-
-    # ✅ FIX: jobs empty হলে placeholder row পাঠাও
-    if not jobs:
-        jobs = [
-            {
-                "id": 0,
-                "job_name": "🔄 Server update চলছে...",
-                "position": "একটু অপেক্ষা করুন",
-                "available": "",
-                "link": "",
-                "updated_at": None
-            }
-        ]
-
     return jsonify({
-        "jobs": jobs,
+        "jobs": [dict(r) for r in rows],
         "scraper_ok": scraper_ok,
         "scraper_msg": scraper_msg
     })
