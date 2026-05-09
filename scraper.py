@@ -2,11 +2,11 @@ import requests
 import time
 import threading
 import os
-import sys
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-SERVER_URL = "https://luckyloop.onrender.com"
+SERVER_URL = "https://luckyloop-tracker.onrender.com"
+PHPSESSID  = os.environ.get("MW_PHPSESSID", "tuikjpk14m036b07sfm8mpou02")
 
 JOB_NAMES = [
     {"full": "TTV-Data Entry - PC required. Not for mobile phones. (E766-1470)", "short": "1470"},
@@ -20,18 +20,11 @@ JOB_NAMES = [
 
 TARGET_URL = "https://www.microworkers.com/jobs.php?Filter=no&Sort=NEWEST&Id_category=09"
 
-def log(msg):
-    print(msg, flush=True)
-    sys.stdout.flush()
-
-def get_session():
-    phpsessid = os.environ.get("MW_PHPSESSID", "tuikjpk14m036b07sfm8mpou02")
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-        "Cookie": f"PHPSESSID={phpsessid}"
-    })
-    return s
+session = requests.Session()
+session.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+    "Cookie": f"PHPSESSID={PHPSESSID}"
+})
 
 def calc_available(pos_str):
     try:
@@ -46,23 +39,17 @@ def update_status(status, message):
             "status" : status,
             "message": message
         }, timeout=10)
-        log(f"[Status] {status} | {message}")
+        print(f"[Status] {status} | {message}")
     except Exception as e:
-        log(f"[Status Error] {e}")
+        print(f"[Status Error] {e}")
 
 def scrape_jobs():
     try:
-        session = get_session()
         r = session.get(TARGET_URL, timeout=20)
-
-        log(f"[Debug] Status code: {r.status_code}")
-        log(f"[Debug] Final URL: {r.url}")
-        log(f"[Debug] Page snippet: {r.text[:500]}")
-
         soup = BeautifulSoup(r.text, "html.parser")
         listings = soup.select(".jobslist")
         count = len(listings)
-        log(f"[Scraper] Found {count} listings")
+        print(f"[Scraper] Found {count} listings")
 
         if count == 0:
             update_status("expired", "⚠️ PHPSESSID Expired! Render এ নতুন Cookie দিন।")
@@ -84,7 +71,7 @@ def scrape_jobs():
                     break
 
     except Exception as e:
-        log(f"[Scraper] Error: {e}")
+        print(f"[Scraper] Error: {e}")
         update_status("error", f"❌ Error: {str(e)[:80]}")
 
 def push(cid, position, available, link):
@@ -95,12 +82,12 @@ def push(cid, position, available, link):
             "available": available,
             "link"     : link
         }, timeout=10)
-        log(f"[Scraper] Pushed {cid} pos={position} avail={available}")
+        print(f"[Scraper] Pushed {cid} pos={position} avail={available}")
     except Exception as e:
-        log(f"[Scraper] Push error: {e}")
+        print(f"[Scraper] Push error: {e}")
 
 def scrape_loop():
-    log("[Scraper] Starting — checking at sec 2, 4, 33, 35...")
+    print("[Scraper] Starting — checking at sec 2, 4, 33, 35...")
     time.sleep(5)
     CHECK_SECONDS = {2, 4, 33, 35}
     last_checked_sec = -1
@@ -108,7 +95,7 @@ def scrape_loop():
         sec = datetime.now().second
         if sec in CHECK_SECONDS and sec != last_checked_sec:
             last_checked_sec = sec
-            log(f"[Scraper] Checking at :{sec:02d}")
+            print(f"[Scraper] Checking at :{sec:02d}")
             scrape_jobs()
         time.sleep(0.5)
 
