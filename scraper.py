@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 SERVER_URL = "https://luckyloop.onrender.com"
-PHPSESSID  = os.environ.get("MW_PHPSESSID", "u01n5ujl08kcuq3sqeln0bmchi")
 
 JOB_NAMES = [
     {"full": "TTV-Data Entry - PC required. Not for mobile phones. (E766-1470)", "short": "1470"},
@@ -20,11 +19,14 @@ JOB_NAMES = [
 
 TARGET_URL = "https://www.microworkers.com/jobs.php?Filter=no&Sort=NEWEST&Id_category=09"
 
-session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-    "Cookie": f"PHPSESSID={PHPSESSID}"
-})
+def get_session():
+    phpsessid = os.environ.get("MW_PHPSESSID", "tuikjpk14m036b07sfm8mpou02")
+    s = requests.Session()
+    s.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Cookie": f"PHPSESSID={phpsessid}"
+    })
+    return s
 
 def calc_available(pos_str):
     try:
@@ -45,6 +47,7 @@ def update_status(status, message):
 
 def scrape_jobs():
     try:
+        session = get_session()
         r = session.get(TARGET_URL, timeout=20)
         soup = BeautifulSoup(r.text, "html.parser")
         listings = soup.select(".jobslist")
