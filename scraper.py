@@ -49,6 +49,12 @@ def scrape_jobs():
     try:
         session = get_session()
         r = session.get(TARGET_URL, timeout=20)
+
+        # Debug info
+        print(f"[Debug] Status code: {r.status_code}")
+        print(f"[Debug] Final URL: {r.url}")
+        print(f"[Debug] Page snippet: {r.text[:300]}")
+
         soup = BeautifulSoup(r.text, "html.parser")
         listings = soup.select(".jobslist")
         count = len(listings)
