@@ -2,6 +2,7 @@ import requests
 import time
 import threading
 import os
+import sys
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -18,6 +19,10 @@ JOB_NAMES = [
 ]
 
 TARGET_URL = "https://www.microworkers.com/jobs.php?Filter=no&Sort=NEWEST&Id_category=09"
+
+def log(msg):
+    print(msg, flush=True)
+    sys.stdout.flush()
 
 def get_session():
     phpsessid = os.environ.get("MW_PHPSESSID", "tuikjpk14m036b07sfm8mpou02")
@@ -41,24 +46,23 @@ def update_status(status, message):
             "status" : status,
             "message": message
         }, timeout=10)
-        print(f"[Status] {status} | {message}")
+        log(f"[Status] {status} | {message}")
     except Exception as e:
-        print(f"[Status Error] {e}")
+        log(f"[Status Error] {e}")
 
 def scrape_jobs():
     try:
         session = get_session()
         r = session.get(TARGET_URL, timeout=20)
 
-        # Debug info
-        print(f"[Debug] Status code: {r.status_code}")
-        print(f"[Debug] Final URL: {r.url}")
-        print(f"[Debug] Page snippet: {r.text[:300]}")
+        log(f"[Debug] Status code: {r.status_code}")
+        log(f"[Debug] Final URL: {r.url}")
+        log(f"[Debug] Page snippet: {r.text[:500]}")
 
         soup = BeautifulSoup(r.text, "html.parser")
         listings = soup.select(".jobslist")
         count = len(listings)
-        print(f"[Scraper] Found {count} listings")
+        log(f"[Scraper] Found {count} listings")
 
         if count == 0:
             update_status("expired", "⚠️ PHPSESSID Expired! Render এ নতুন Cookie দিন।")
@@ -80,7 +84,7 @@ def scrape_jobs():
                     break
 
     except Exception as e:
-        print(f"[Scraper] Error: {e}")
+        log(f"[Scraper] Error: {e}")
         update_status("error", f"❌ Error: {str(e)[:80]}")
 
 def push(cid, position, available, link):
@@ -91,12 +95,12 @@ def push(cid, position, available, link):
             "available": available,
             "link"     : link
         }, timeout=10)
-        print(f"[Scraper] Pushed {cid} pos={position} avail={available}")
+        log(f"[Scraper] Pushed {cid} pos={position} avail={available}")
     except Exception as e:
-        print(f"[Scraper] Push error: {e}")
+        log(f"[Scraper] Push error: {e}")
 
 def scrape_loop():
-    print("[Scraper] Starting — checking at sec 2, 4, 33, 35...")
+    log("[Scraper] Starting — checking at sec 2, 4, 33, 35...")
     time.sleep(5)
     CHECK_SECONDS = {2, 4, 33, 35}
     last_checked_sec = -1
@@ -104,7 +108,7 @@ def scrape_loop():
         sec = datetime.now().second
         if sec in CHECK_SECONDS and sec != last_checked_sec:
             last_checked_sec = sec
-            print(f"[Scraper] Checking at :{sec:02d}")
+            log(f"[Scraper] Checking at :{sec:02d}")
             scrape_jobs()
         time.sleep(0.5)
 
